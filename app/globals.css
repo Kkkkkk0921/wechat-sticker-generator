@@ -1,0 +1,261 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f3ee;
+  --panel: #ffffff;
+  --ink: #1c1b18;
+  --muted: #68645d;
+  --line: #dfd8ce;
+  --accent: #0b8f6a;
+  --accent-strong: #07664d;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 32px 20px 48px;
+}
+
+.shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.titleBlock {
+  max-width: 680px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.countBadge {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf2;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.formPanel,
+.resultsPanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.formPanel {
+  padding: 20px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.field label {
+  font-weight: 700;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfa;
+  color: var(--ink);
+  padding: 12px;
+  outline: none;
+}
+
+.field textarea {
+  min-height: 150px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(11, 143, 106, 0.14);
+}
+
+.primaryButton {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 13px 16px;
+}
+
+.primaryButton:hover {
+  background: var(--accent-strong);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.error {
+  margin: 14px 0 0;
+  color: var(--danger);
+  line-height: 1.5;
+}
+
+.resultsPanel {
+  min-height: 520px;
+  padding: 20px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+  padding: 28px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sticker {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fffdfa;
+}
+
+.sticker img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.stickerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.stickerFooter span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.download {
+  color: var(--accent-strong);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.download:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .topbar,
+  .workspace {
+    display: block;
+  }
+
+  .countBadge {
+    display: inline-block;
+    margin-top: 16px;
+  }
+
+  .formPanel {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 22px 14px 36px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
