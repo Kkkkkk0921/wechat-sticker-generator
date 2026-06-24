@@ -41,7 +41,10 @@ export default function Home() {
         })
       });
 
-      const payload = (await response.json()) as GenerateResponse;
+      const contentType = response.headers.get("Content-Type") || "";
+      const payload = contentType.includes("application/json")
+        ? ((await response.json()) as GenerateResponse)
+        : ({ error: "生成服务暂时没有返回有效结果，请等待 1 分钟后再试。" } satisfies GenerateResponse);
 
       if (!response.ok) {
         throw new Error(payload.error || "生成失败，请稍后再试。");

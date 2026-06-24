@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const STICKER_COUNT = 5;
+const OUTPUT_FORMAT = "jpeg";
 
 type ImageGenerationResponse = {
   data?: Array<{
@@ -79,7 +80,8 @@ export async function POST(request: NextRequest) {
         n: STICKER_COUNT,
         size: "1024x1024",
         quality: "low",
-        output_format: "png"
+        output_format: OUTPUT_FORMAT,
+        output_compression: 70
       })
     });
 
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
       result.data
         ?.map((image) => image.b64_json)
         .filter((image): image is string => Boolean(image))
-        .map((image) => `data:image/png;base64,${image}`) ?? [];
+        .map((image) => `data:image/${OUTPUT_FORMAT};base64,${image}`) ?? [];
 
     if (images.length === 0) {
       return NextResponse.json({ error: "没有收到可用图片，请重试。" }, { status: 502 });
