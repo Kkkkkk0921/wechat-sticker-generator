@@ -201,6 +201,20 @@ function cleanInput(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function cleanStickerIndex(value: unknown) {
+  const stickerIndex = Number(value);
+
+  if (!Number.isInteger(stickerIndex)) {
+    return null;
+  }
+
+  if (stickerIndex < 1 || stickerIndex > 5) {
+    return null;
+  }
+
+  return stickerIndex;
+}
+
 function stripPresetHint(value: string, selectedStyle: StylePreset | null) {
   return value
     .split("\n")
@@ -535,9 +549,15 @@ export async function POST(request: NextRequest) {
   const characterName = cleanInput(payload.characterName);
   const characterDescription = cleanInput(payload.characterDescription);
   const styleId = cleanInput(payload.styleId);
+  const singleImage = payload.singleImage === true;
+  const stickerIndex = cleanStickerIndex(payload.stickerIndex);
 
   if (!characterName) {
     return NextResponse.json({ error: "请填写角色名字。" }, { status: 400 });
+  }
+
+  if (singleImage && !stickerIndex) {
+    return NextResponse.json({ error: "单张生成需要提供 1-5 的图片序号。" }, { status: 400 });
   }
 
   const model = process.env.OPENAI_IMAGE_MODEL || "gpt-image-2";
@@ -552,8 +572,32 @@ export async function POST(request: NextRequest) {
   ).slice(0, 1600);
 
   try {
-    const styleReferenceImages = await readStyleReferenceImages(selectedStyle);
     const stickerSlotInstructions = buildStickerSlotInstructions(characterDescriptionForPrompt);
+    const generateTextOnlySticker = async (stickerSlotInstruction: string) => {
+      const prompt = buildPrompt(
+        characterNameForPrompt,
+        characterDescriptionForPrompt,
+        characterIdentityBrief,
+        selectedStyle,
+        stickerSlotInstruction,
+        0,
+        false
+      );
+
+      return generateWithTextOnly(apiKey, model, prompt);
+    };
+
+    if (singleImage && stickerIndex) {
+      const images = await generateTextOnlySticker(stickerSlotInstructions[stickerIndex - 1]);
+
+      if (images.length === 0) {
+        return NextResponse.json({ error: "没有收到可用图片，请重试。" }, { status: 502 });
+      }
+
+      return NextResponse.json({ images });
+    }
+
+    const styleReferenceImages = await readStyleReferenceImages(selectedStyle);
     const shouldUseStyleReferencesForFirstImage = false;
     const generateSticker = async (
       stickerSlotInstruction: string,

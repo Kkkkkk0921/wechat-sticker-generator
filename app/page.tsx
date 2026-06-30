@@ -19,6 +19,7 @@ export default function Home() {
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null);
   const [stickers, setStickers] = useState<GeneratedSticker[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [error, setError] = useState("");
   const selectedStyle = selectedStyleId ? getStylePresetById(selectedStyleId) : null;
 
@@ -67,31 +68,44 @@ export default function Home() {
     setError("");
     setStickers([]);
     setIsGenerating(true);
+    setGenerationProgress(0);
 
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          characterName,
-          characterDescription: removePresetHint(characterDescription),
-          styleId: selectedStyle?.id
-        })
-      });
+      const cleanedDescription = removePresetHint(characterDescription);
 
-      const contentType = response.headers.get("Content-Type") || "";
-      const payload = contentType.includes("application/json")
-        ? ((await response.json()) as GenerateResponse)
-        : ({ error: "生成服务暂时没有返回有效结果，请等待 1 分钟后再试。" } satisfies GenerateResponse);
+      for (let index = 1; index <= 5; index += 1) {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            characterName,
+            characterDescription: cleanedDescription,
+            styleId: selectedStyle?.id,
+            stickerIndex: index,
+            singleImage: true
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error(payload.error || "生成失败，请稍后再试。");
+        const contentType = response.headers.get("Content-Type") || "";
+        const payload = contentType.includes("application/json")
+          ? ((await response.json()) as GenerateResponse)
+          : ({ error: `第 ${index} 张生成服务暂时没有返回有效结果，请等待 1 分钟后再试。` } satisfies GenerateResponse);
+
+        if (!response.ok) {
+          throw new Error(payload.error || `第 ${index} 张生成失败，请稍后再试。`);
+        }
+
+        const image = payload.images?.[0];
+
+        if (!image) {
+          throw new Error(`第 ${index} 张没有收到可用图片，请重试。`);
+        }
+
+        setStickers((current) => [...current, { id: index, src: image }]);
+        setGenerationProgress(index);
       }
-
-      const images = payload.images ?? [];
-      setStickers(images.map((src, index) => ({ id: index + 1, src })));
     } catch (err) {
       setError(err instanceof Error ? err.message : "生成失败，请稍后再试。");
     } finally {
@@ -178,7 +192,11 @@ export default function Home() {
             <div className="panelHeader">
               <h2>生成结果</h2>
               <span className="status">
-                {isGenerating ? "通常需要 1-2 分钟" : stickers.length ? `${stickers.length} 张已生成` : "等待输入"}
+                {isGenerating
+                  ? `正在生成 ${Math.min(generationProgress + 1, 5)} / 5`
+                  : stickers.length
+                    ? `${stickers.length} 张已生成`
+                    : "等待输入"}
               </span>
             </div>
 
